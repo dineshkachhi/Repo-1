@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch User Location</title>
+    <script>
+        let apiKey = "AIzaSyCU4MmHnxSxKWFVpHytKeA9fGw5HHPvF40"; // Replace with your Google API Key
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, askManualLocation, {timeout: 10000});
+            } else {
+                askManualLocation();
+            }
+        }
+
+        function showPosition(position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+            fetchAddress(lat, lon);
+        }
+
+        function askManualLocation() {
+            document.getElementById("manual-location").style.display = "block";
+        }
+
+        function fetchAddress(lat, lon) {
+            let url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let address = data.results[0]?.formatted_address || "Location not found";
+                    alert(`Selected Location: ${address}\nLatitude: ${lat}, Longitude: ${lon}`);
+                })
+                .catch(error => console.error("Error fetching address:", error));
+        }
+
+        function searchLocation() {
+            let location = document.getElementById("location-input").value;
+            let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "OK") {
+                        let place = data.results[0];
+                        let lat = place.geometry.location.lat;
+                        let lon = place.geometry.location.lng;
+                        alert(`Selected Location: ${place.formatted_address}\nLatitude: ${lat}, Longitude: ${lon}`);
+                    } else {
+                        alert("Location not found. Please try again.");
+                    }
+                })
+                .catch(error => console.error("Error fetching location:", error));
+        }
+    </script>
+</head>
+<body onload="getLocation()">
+    <h2>Find Your Location</h2>
+    <div id="manual-location" style="display: none;">
+        <input type="text" id="location-input" placeholder="Enter location manually">
+        <button onclick="searchLocation()">Search</button>
+    </div>
+</body>
+</html>
