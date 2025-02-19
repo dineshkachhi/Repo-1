@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fetch User Location</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBiHIW5ZZgCF5njKG0up2JVRhd3MqkrTjQ&libraries=places&callback=initAutocomplete" async defer></script>
-
     <script>
-        let apiKey = "AIzaSyBiHIW5ZZgCF5njKG0up2JVRhd3MqkrTjQ"; // Replace with your Google API Key
+        let apiKey = "YOUR_GOOGLE_API_KEY"; // Replace with your Google API Key
 
         function getLocation() {
             if (navigator.geolocation) {
@@ -40,7 +38,13 @@
 
         function initAutocomplete() {
             let input = document.getElementById("location-input");
-            let autocomplete = new google.maps.places.Autocomplete(input);
+            if (!input) {
+                console.error("Location input box not found!");
+                return;
+            }
+            
+            let autocomplete = new google.maps.places.Autocomplete(input, { types: ["geocode"] });
+
             autocomplete.addListener("place_changed", function () {
                 let place = autocomplete.getPlace();
                 if (!place.geometry) {
