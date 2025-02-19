@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fetch User Location</title>
     <script>
-        let apiKey = "AIzaSyBqJKmAV2Un8nx157jlupmDinYqnwAlTYM"; // Replace with your Google API Key
+        let apiKey = "YOUR_GOOGLE_API_KEY"; // Replace with your Google API Key
 
         function getLocation() {
             if (navigator.geolocation) {
@@ -43,7 +43,10 @@
                 return;
             }
             
-            let autocomplete = new google.maps.places.Autocomplete(input, { types: ["geocode"] });
+            let autocomplete = new google.maps.places.Autocomplete(input, {
+                types: ["geocode"],
+                componentRestrictions: { country: "IN" } // Restrict search to India
+            });
 
             autocomplete.addListener("place_changed", function () {
                 let place = autocomplete.getPlace();
@@ -56,13 +59,39 @@
                 alert(`Selected Location: ${place.formatted_address}\nLatitude: ${lat}, Longitude: ${lon}`);
             });
         }
+
+        function searchLocation() {
+            let input = document.getElementById("location-input").value;
+            if (input.length < 3) return; // Call API only if at least 3 characters are entered
+            
+            let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=geocode&components=country:IN&key=${apiKey}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "OK") {
+                        let place = data.predictions[0];
+                        let placeId = place.place_id;
+                        fetch(`https://maps.googleapis.com/maps/api/geocode/json?place_id=${placeId}&key=${apiKey}`)
+                            .then(res => res.json())
+                            .then(geoData => {
+                                let lat = geoData.results[0].geometry.location.lat;
+                                let lon = geoData.results[0].geometry.location.lng;
+                                alert(`Selected Location: ${place.description}\nLatitude: ${lat}, Longitude: ${lon}`);
+                            });
+                    } else {
+                        alert("No results found in India.");
+                    }
+                })
+                .catch(error => console.error("Error fetching location:", error));
+        }
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqJKmAV2Un8nx157jlupmDinYqnwAlTYM&libraries=places&callback=initAutocomplete" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
 </head>
 <body onload="getLocation()">
     <h2>Find Your Location</h2>
     <div id="manual-location" style="display: none;">
-        <input type="text" id="location-input" placeholder="Enter location manually">
+        <input type="text" id="location-input" placeholder="Enter location manually" onkeyup="searchLocation()">
     </div>
 </body>
 </html>
