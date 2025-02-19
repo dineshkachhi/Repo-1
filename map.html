@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fetch User Location</title>
     <script>
-        let apiKey = "AIzaSyBiHIW5ZZgCF5njKG0up2JVRhd3MqkrTjQ"; // Replace with your Google API Key
+        let apiKey = "YOUR_GOOGLE_API_KEY"; // Replace with your Google API Key
 
         function getLocation() {
             if (navigator.geolocation) {
@@ -36,30 +36,27 @@
                 .catch(error => console.error("Error fetching address:", error));
         }
 
-        function searchLocation() {
-            let location = document.getElementById("location-input").value;
-            let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === "OK") {
-                        let place = data.results[0];
-                        let lat = place.geometry.location.lat;
-                        let lon = place.geometry.location.lng;
-                        alert(`Selected Location: ${place.formatted_address}\nLatitude: ${lat}, Longitude: ${lon}`);
-                    } else {
-                        alert("Location not found. Please try again.");
-                    }
-                })
-                .catch(error => console.error("Error fetching location:", error));
+        function initAutocomplete() {
+            let input = document.getElementById("location-input");
+            let autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.addListener("place_changed", function () {
+                let place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    alert("Location not found. Please try again.");
+                    return;
+                }
+                let lat = place.geometry.location.lat();
+                let lon = place.geometry.location.lng();
+                alert(`Selected Location: ${place.formatted_address}\nLatitude: ${lat}, Longitude: ${lon}`);
+            });
         }
     </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
 </head>
 <body onload="getLocation()">
     <h2>Find Your Location</h2>
     <div id="manual-location" style="display: none;">
         <input type="text" id="location-input" placeholder="Enter location manually">
-        <button onclick="searchLocation()">Search</button>
     </div>
 </body>
 </html>
